@@ -7,15 +7,14 @@ async function getXml() {
     url: "https://s3-eu-west-1.amazonaws.com/simplexmldata/data.xml",
     responseType: "text"
   })
-    .then(function(response) {
+    .then(function (response) {
       return new Promise((resolve, reject) => {
-        parseString(response.data, function(err, result) {
-          console.dir(result.BACSDocument.Data);
+        parseString(response.data, function (err, result) {
           resolve(result.BACSDocument.Data);
         });
       });
     })
-    .catch(function(error) {
+    .catch(function (error) {
       // handle error
       console.log(error);
     });

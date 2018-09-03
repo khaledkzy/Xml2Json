@@ -1,6 +1,4 @@
 const axios = require("axios");
-
-
 async function getXmlmanually() {
     const result = await axios({
         method: "get",
@@ -10,19 +8,9 @@ async function getXmlmanually() {
         xmlToJson(data.data);
         return result;
     })
-    .catch(err => console.log(err))
+        .catch(err => console.log(err))
 }
-// getXmlmanually().then(data => {
-//     console.log(data);
-// });
-
-
-
-const xml = "<a><b>crap</b></a>"
-
 let calls = 0;
-
-debugger
 
 function xmlToJson(xml) {
     if (calls > 10) {

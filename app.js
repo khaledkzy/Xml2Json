@@ -6,8 +6,13 @@ var logger = require("morgan");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
-var getXml = require("./parseXMLtoJSON");
-var getXmlmanually = require("./parseXMLmanually");
+var parseXML = require("./parseXMLtoJSON");
+var parseXMLmanually = require("./parseXMLmanually");
+
+//const extractReturnedDebitItem = require('../helpers/extractReturnedDebit');
+const schema = require('./schema')
+
+const mongoose = require('mongoose');
 
 var app = express();
 
@@ -25,26 +30,37 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
 app.get("/jsonXml", (req, res) => {
-  getXml().then(result => {
+  parseXML().then(result => {
     console.log("I get it here", result);
     res.send(result);
   });
 });
 
 app.get("/xmlToJson", (req, res) => {
-  getXmlmanually().then(result => {
+  parseXMLmanually().then(result => {
     console.log("I get it here", result);
     res.send(result);
   });
 });
 
+app.get('/save', async (req, res) => {
+  try {
+    await parseXML().then(async data => {
+      await schema(data)
+      res.status(200).send("Saved to DB");
+    })
+  } catch (error) {
+    res.status(502).send("unable to save to database");
+  }
+});
+
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
