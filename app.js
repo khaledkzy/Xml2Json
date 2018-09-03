@@ -31,8 +31,8 @@ app.get("/jsonXml", (req, res) => {
   });
 });
 
-app.get("/getXmlmanually", (req, res) => {
-  getXml().then(result => {
+app.get("/xmlToJson", (req, res) => {
+  getXmlmanually().then(result => {
     console.log("I get it here", result);
     res.send(result);
   });
