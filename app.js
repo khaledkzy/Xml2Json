@@ -1,20 +1,21 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
-var parseXML = require("./parseXMLtoJSON");
-var parseXMLmanually = require("./parseXMLmanually");
-
-//const extractReturnedDebitItem = require('../helpers/extractReturnedDebit');
-const schema = require('./schema')
-
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const indexRouter = require("./routes/index");
+const parseXML = require("./parseXMLtoJSON");
+const parseXMLmanually = require("./parseXMLmanually");
+const extractReturnedDebitItem = require('./extractReturnedDebit');
 const mongoose = require('mongoose');
 
-var app = express();
+const BACSDocument = require('./models/BACSDocumentSchema');
+const DEBITITEM = require('./models/debitItemSchema');
+
+require('./connection');
+
+
+const app = express();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -27,16 +28,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
 
-app.get("/jsonXml", (req, res) => {
+
+app.get("/XMLtoJSON", (req, res) => {
   parseXML().then(result => {
-    console.log("I get it here", result);
-    res.send(result);
+    let debit = extractReturnedDebitItem(result)
+    res.send(debit);
   });
 });
 
-app.get("/xmlToJson", (req, res) => {
+app.get("/XMLtoJSONmanually", (req, res) => {
   parseXMLmanually().then(result => {
     console.log("I get it here", result);
     res.send(result);
@@ -45,13 +46,23 @@ app.get("/xmlToJson", (req, res) => {
 
 app.get('/save', async (req, res) => {
   try {
-    await parseXML().then(async data => {
-      await schema(data)
-      res.status(200).send("Saved to DB");
-    })
-  } catch (error) {
+    const parsed = await parseXML()
+    //console.log('>>>>', JSON.stringify(parsed))
+    const response = await BACSDocument(parsed)
+    const debit = await extractReturnedDebitItem(response)
+    const debitReturn = await DEBITITEM(debit)
+
+    response.save()
+    debitReturn.save()
+    console.log(debitReturn)
+    res.status(200).send(debitReturn)
+  }
+  catch (error) {
+    console.log('>>>>>>' + error)
     res.status(502).send("unable to save to database");
   }
+  // return db.XML.find({})
+  //   .then(console.log)
 });
 
 // catch 404 and forward to error handler
