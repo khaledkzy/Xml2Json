@@ -1,30 +1,20 @@
-<div class="container">
-    <div class="header">
-        <h1>{{title}}</h1>
-        <a href={{link}} class="save-button">{{text}}</a>
-        <h1 class={{style}}>{{message}}</h1>
+<main>
+
+  <div class="landing-page">
+    <div class="landing-text-inner">
+      <h1>ParseXMLtoJSON</h1>
+      <a class='btn' href="/XMLtoJSON">View BACS Document (library:xml2js)</a>
+      <a class='btn' href="/XMLtoJSONmanually">View BACS Document (No library)</a>
+      <h3 class="sub-title">View the pasrsed XML</h3>
+      <a class='btn' href="/saveBACSdocument">Save and View BACS Document</a>
+      <a class='btn' href="/saveDebitItem">Save and View Debit Item</a>
+      <h3 class="sub-title">Save the parsed JSON to the database(data parsed from xml2json</h3>
+      <a class='btn' href="/saveBACSdocumentManually">Save and View BACS Document</a>
+      <h3 class="sub-title">Save the parsed JSON to the database (No library)</h3>
+
+
+
     </div>
-    {{#each data}}
-        <div class="content">
-            <div class="debit-item">
-                <h2>Debit Item Info</h2>
-                <li><strong>Ref: </strong>{{debitItemData.ref}}</li>
-                <li><strong>Value Of: </strong>{{debitItemData.valueOf}}</li>
-                <li><strong>Currency: </strong>{{debitItemData.currency}}</li>
-                <li><strong>Trans Code: </strong>{{debitItemData.transCode}}</li>
-                <li><strong>Return Code: </strong>{{debitItemData.returnCode}}</li>
-                <li><strong>Return Description: </strong>{{debitItemData.returnDescription}}</li>
-                <li><strong>Original ProcessingDate: </strong>{{debitItemData.ref}}</li>
-            </div>
-            <div class="payer-account">
-                <h2>Payer account info</h2>
-                <li><strong>Ref: </strong>{{PayerAccountInfo.ref}}</li>
-                <li><strong>Name</strong>{{PayerAccountInfo.name}}</li>
-                <li><strong>Bank: </strong>{{PayerAccountInfo.bankName}}</li>
-                <li><strong>Branch: </strong>{{PayerAccountInfo.branchName}}</li>
-                <li><strong>Number: </strong>{{PayerAccountInfo.number}}</li>
-                <li><strong>Sort Code: </strong>{{PayerAccountInfo.sortCode}}</li>
-            </div>
-        </div>
-    {{/each}}
-</div>
+  </div>
+
+</main>

@@ -32,37 +32,56 @@ app.use("/", indexRouter);
 
 app.get("/XMLtoJSON", (req, res) => {
   parseXML().then(result => {
-    let debit = extractReturnedDebitItem(result)
-    res.send(debit);
-  });
-});
-
-app.get("/XMLtoJSONmanually", (req, res) => {
-  parseXMLmanually().then(result => {
-    console.log("I get it here", result);
     res.send(result);
   });
 });
 
-app.get('/save', async (req, res) => {
+app.get("/XMLtoJSONmanually", (req, res) => {
+  parseXMLmanually().then(response => {
+    return res.send(response)
+})
+});
+
+app.get('/saveBACSdocument', async (req, res) => {
   try {
     const parsed = await parseXML()
-    //console.log('>>>>', JSON.stringify(parsed))
+    const response = await BACSDocument(parsed)
+    response.save()
+    res.status(200).send(response)
+  }
+  catch (error) {
+    console.log('>>>>>>' + error)
+    res.status(502).send("unable to save to database");
+  }
+
+});
+
+app.get('/saveBACSdocumentManually', async (req, res) => {
+  try {
+    const parsed = await parseXMLmanually()
+    const response = await BACSDocument(parsed)
+    response.save()
+    res.status(200).send(response)
+  }
+  catch (error) {
+    console.log('>>>>>>' + error)
+    res.status(502).send("unable to save to database");
+  }
+
+});
+app.get('/saveDebitItem', async (req, res) => {
+  try {
+    const parsed = await parseXML()
     const response = await BACSDocument(parsed)
     const debit = await extractReturnedDebitItem(response)
     const debitReturn = await DEBITITEM(debit)
-
-    response.save()
     debitReturn.save()
-    console.log(debitReturn)
     res.status(200).send(debitReturn)
   }
   catch (error) {
     console.log('>>>>>>' + error)
     res.status(502).send("unable to save to database");
   }
-  // return db.XML.find({})
-  //   .then(console.log)
 });
 
 // catch 404 and forward to error handler

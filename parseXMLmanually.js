@@ -4,73 +4,68 @@ async function getXmlmanually() {
         method: "get",
         url: "https://s3-eu-west-1.amazonaws.com/simplexmldata/data.xml",
         responseType: "text"
-    }).then(data => {
-        xmlToJson(data.data);
-        return result;
     })
-        .catch(err => console.log(err))
+       let parsedXML = await xmlToJson(result.data);
+       console.log('>>>>Result of the function, ', parsedXML)
+       return parsedXML
+           // .catch(err => console.log(err))
 }
-let calls = 0;
 
 function xmlToJson(xml) {
-    if (calls > 10) {
-        return;
-    }
+    xml = xml.trim();
     if (!xml) {
         return [];
     }
     let indexToStartAt = xml.search(/<[A-Z]/);
     let hasNext = true;
-    const elements = [];
-    while (hasNext && calls < 10000) {
-        calls += 1;
-        const firstPar = xml.indexOf('<', indexToStartAt);
-        const firstSpace = xml.indexOf(' ', firstPar);
-        const matchingPar = xml.indexOf('>', firstPar);
-
-        const elementEndsAt = firstSpace > -1 ? firstSpace : matchingPar;
-        const tagName = xml.substring(firstPar + 1, elementEndsAt);
-
-        const closingTag = `</${tagName}>`; // </A>
-        const startClosingIndex = xml.indexOf(closingTag);
-        const children = xml.substring(matchingPar + 1, startClosingIndex)
-            .trim()
-            .replace(' ', '')
-            .replace('\n', '')
-            .replace(' ', '');
-
-        const parsedChildren = xmlToJson(children);
-
-        indexToStartAt = startClosingIndex + closingTag.length;
-        hasNext = xml.indexOf('<', indexToStartAt) > -1;
-        elements.push({
-            tagName,
-            children: parsedChildren,
-            attributes: []
-        });
+    let elements = {};
+    while (hasNext) {
+        const firstOpeningBracket = xml.indexOf("<", indexToStartAt);
+        const firstSpace = xml.indexOf(" ", firstOpeningBracket);
+        const matchingClosingBracket = xml.indexOf(">", firstOpeningBracket);
+        let rawAttributes = [];
+        if (firstSpace < matchingClosingBracket) {
+            rawAttributes = xml
+                .substring(firstSpace + 1, matchingClosingBracket)
+                .split('" ');
+        }
+        const attributes = parseAttributes(rawAttributes);
+        const elementEndsAt = minNonNegative(firstSpace, matchingClosingBracket);
+        const tagName = xml.substring(firstOpeningBracket + 1, elementEndsAt); // Child
+        const closingTag = `</${tagName}>`; // </Child>
+        const closingTagIndex = xml.indexOf(closingTag, matchingClosingBracket);
+        const rawChildren = xml.substring(
+            matchingClosingBracket + 1,
+            closingTagIndex
+        );
+        const parsedChildren = xmlToJson(rawChildren);
+        indexToStartAt = closingTagIndex + closingTag.length;
+        hasNext = xml.indexOf("<", indexToStartAt) > -1;
+        elements = {
+            ...elements,
+            [tagName]: {
+                ...(attributes && { $attributes$: attributes }),
+                ...parsedChildren
+            }
+        };
     }
-
-
-    // console.log(elements);
     return elements;
 }
 
-// xmlToJson(test);
+function parseAttributes(rawAttributes) {
+    return rawAttributes.reduce((total, attr) => {
+        const values = attr.split("=").map(x => x.replace(/"/g, ""));
+        return {
+            ...total,
+            [values[0]]: values[1]
+        };
+    }, undefined);
+}
 
-
+function minNonNegative(...values) {
+    const nonNegative = values.filter(x => x > -1);
+    return Math.min(...nonNegative);
+}
 
 module.exports = getXmlmanually
 
-/*
-
-const mockXml = "
-
-<A atr1='11' atr2='22'>
-    <B></B>
-    <C></C>
-</A>
-
-"
-
-
-*/
