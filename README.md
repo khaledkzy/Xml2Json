@@ -1,4 +1,4 @@
-# Parse XML to JSON and save it monogdoDB.
+# Parse XML to JSON and save it to a database (mlab).
 
 ![alt text](img/1.png)
 
